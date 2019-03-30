@@ -1,0 +1,28 @@
+{
+    "name": "Caddy Proxy",
+    "version": "1.0",
+    "slug": "caddy",
+    "description": "Caddy Proxy Add-on for Home Assistant",
+    "startup": "before",
+    "boot": "auto",
+    "ports": {
+      "443/tcp": 443
+    },
+    "map": ["share:rw"],
+    "hassio_api": true,
+    "hassio_role": "default",
+    "options": {
+        "AWS_ACCESS_KEY_ID": null,
+        "AWS_SECRET_ACCESS_KEY": null,
+        "AWS_HOSTED_ZONE_ID": null,
+        "site": null,
+        "email": null
+    },
+    "schema": {
+        "AWS_ACCESS_KEY_ID": "str",
+        "AWS_SECRET_ACCESS_KEY": "str",
+        "AWS_HOSTED_ZONE_ID": "str",
+        "site": "str",
+        "email": "email"
+    }
+}
