@@ -1,10 +1,5 @@
 {
-  "name": "Route53 IPv6 Home Assistant Add-on",
-  "url": "https://github.com/flozsc/hassio_route53_ipv6",
-  "maintainer": "Florian Zschetzsche"
-},
-{
-  "name": "Caddy Proxy for Home Assistant Add-on",
-  "url": "https://github.com/flozsc/hassio_caddy",
+  "name": "flozsc's Home Assistant Add-ons",
+  "url": "https://github.com/flozsc/hassio_addons",
   "maintainer": "Florian Zschetzsche"
 }
