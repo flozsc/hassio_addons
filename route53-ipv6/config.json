@@ -1,6 +1,6 @@
 {
     "name": "Route53 Dynamic DNS IPv6",
-    "version": "1.2",
+    "version": "1.2.1",
     "slug": "route53-ipv6",
     "description": "AWS Route53 Dynamic DNS IPv6 Add-on for Home Assistant",
     "startup": "before",
