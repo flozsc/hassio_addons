@@ -4,6 +4,11 @@
     "slug": "caddy",
     "description": "Caddy Proxy Add-on for Home Assistant",
     "startup": "before",
+    "arch": [
+      "aarch64",
+      "amd64",
+      "armv7"
+    ],
     "boot": "auto",
     "ports": {
       "443/tcp": 443

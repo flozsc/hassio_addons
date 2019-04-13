@@ -4,6 +4,11 @@
     "slug": "route53-ipv6",
     "description": "AWS Route53 Dynamic DNS IPv6 Add-on for Home Assistant",
     "startup": "before",
+    "arch": [
+      "aarch64",
+      "amd64",
+      "armv7"
+    ],
     "boot": "auto",
     "host_network": true,
     "hassio_api": true,
