@@ -1,49 +1,37 @@
-#!/bin/bash
-# Hass.io Amazon Route53 Dynamic DNS plugin.
-# Keiran Sweet <keiran@gmail.com>
+#!/usr/bin/env bashio
+# Hass.io Add-on Caddy with Let's Encrypt Route53 DNS challenge
+# Florian Zschetzsche <flozsc@outlook.com>
 #
-# This plugin allows you to update a record in Route53 to point to your discovered IP
-# address. By default, we determine the IP address from ipify in the config.json,
-# however you can set this to any HTTP/HTTPS endpoint of your choice if required.
+# This add-on allows you to setup a Caddy proxy server to your Home Assistant
+# instance, using Let's Encrypt's Route53 DNS challenge method.
 #
 # For full configuration information, please see the README.md
 #
 
-# Source in some helper functions that make handling JSON easier in bash
-source /usr/lib/hassio-addons/base.sh
-
 #
 # Pull in the required values from the config.json file
 #
-export AWS_SECRET_ACCESS_KEY=$(hass.config.get 'AWS_SECRET_ACCESS_KEY')
-export AWS_ACCESS_KEY_ID=$(hass.config.get 'AWS_ACCESS_KEY_ID')
-export AWS_HOSTED_ZONE_ID=$(hass.config.get 'AWS_HOSTED_ZONE_ID')
-export SITE=$(hass.config.get 'site')
-export EMAIL=$(hass.config.get 'email')
+export AWS_SECRET_ACCESS_KEY=$(bashio::config 'AWS_SECRET_ACCESS_KEY')
+export AWS_ACCESS_KEY_ID=$(bashio::config 'AWS_ACCESS_KEY_ID')
+export AWS_HOSTED_ZONE_ID=$(bashio::config 'AWS_HOSTED_ZONE_ID')
+export SITE=$(bashio::config 'site')
+export EMAIL=$(bashio::config 'email')
 export CADDYPATH=/share/caddy/
 
 if [ ! -d "$CADDYPATH" ]; then
   mkdir $CADDYPATH
 fi
 
-# Functions used for the addon.
 
-# Debugging message wrapper used to echo values only if debug is set to true
-# function debug_message {
-#     if [ $DEBUG == 'true' ]; then
-#       echo "$(date) DEBUG : $1"
-#     fi
-# }
+# Create Caddyfile based on add-on configuration
 
-# Create / Update the Record in Route53 if/when required
-# Indentation is a little off because bash's heredoc support doesnt like indentation..
-#
 function create_caddyfile {
-    echo "$(date) INFO : Creating Caddyfile for ${SITE}"
+    bashio::log.info "Creating Caddyfile for ${SITE}"
 
+    # Delete a possibly existing file first
     rm -f /tmp/Caddyfile
 
-cat << ENDOFCREATEJSON > /tmp/Caddyfile
+cat << ENDOFCADDYFILE > /tmp/Caddyfile
   ${SITE} {
       proxy / homeassistant:8123 {
           websocket
@@ -54,7 +42,7 @@ cat << ENDOFCREATEJSON > /tmp/Caddyfile
           dns route53
       }
   }
-ENDOFCREATEJSON
+ENDOFCADDYFILE
 
 }
 

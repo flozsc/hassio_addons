@@ -1,6 +1,6 @@
 {
     "name": "Caddy Proxy",
-    "version": "1.0",
+    "version": "1.0.1",
     "slug": "caddy",
     "description": "Caddy Proxy Add-on for Home Assistant",
     "startup": "before",
