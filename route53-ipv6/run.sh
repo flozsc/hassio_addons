@@ -116,7 +116,7 @@ do
         ;;
 
         '"NOERROR"')
-            debug_message "Got NOERROR (${RESPONSECODE}) - Continue to ensure IP address is correct in record"
+            bashio::log.debug "Got NOERROR (${RESPONSECODE}) - Continue to ensure IP address is correct in record"
             evaluate_record
         ;;
 
