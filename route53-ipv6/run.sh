@@ -1,44 +1,35 @@
-#!/bin/bash
-# Hass.io Amazon Route53 Dynamic DNS plugin.
-# Keiran Sweet <keiran@gmail.com>
+#!/usr/bin/env bashio
+# Hass.io Add-on AWS Route53 Dynamic DNS for IPv6.
+# Florian Zschetzsche <flozsc@outlook.com>
+# based on Keiran Sweet's <keiran@gmail.com> original version for A records.
 #
 # This plugin allows you to update a record in Route53 to point to your discovered IP
-# address. By default, we determine the IP address from ipify in the config.json,
-# however you can set this to any HTTP/HTTPS endpoint of your choice if required.
+# address. By default, we determine the IP address from v6.ipv6-test.com,
+# however you can set this to any HTTP/HTTPS endpoint of your choice in
+# config.json if required.
 #
 # For full configuration information, please see the README.md
 #
 
-# Source in some helper functions that make handling JSON easier in bash
-source /usr/lib/hassio-addons/base.sh
-
 #
 # Pull in the required values from the config.json file
 #
-export AWS_SECRET_ACCESS_KEY=$(hass.config.get 'AWS_SECRET_ACCESS_KEY')
-export AWS_DEFAULT_REGION=$(hass.config.get 'AWS_REGION')
-export AWS_REGION=$(hass.config.get 'AWS_REGION')
-export AWS_ACCESS_KEY_ID=$(hass.config.get 'AWS_ACCESS_KEY_ID')
-export RECORDNAME=$(hass.config.get 'RECORDNAME')
-export TIMEOUT=$(hass.config.get 'TIMEOUT')
-export ZONEID=$(hass.config.get 'ZONEID')
-export IPURL=$(hass.config.get 'IPURL')
-export DEBUG=$(hass.config.get 'DEBUG')
+export AWS_SECRET_ACCESS_KEY=$(bashio::config 'AWS_SECRET_ACCESS_KEY')
+export AWS_DEFAULT_REGION=$(bashio::config 'AWS_REGION')
+export AWS_REGION=$(bashio::config 'AWS_REGION')
+export AWS_ACCESS_KEY_ID=$(bashio::config 'AWS_ACCESS_KEY_ID')
+export RECORDNAME=$(bashio::config 'RECORDNAME')
+export TIMEOUT=$(bashio::config 'TIMEOUT')
+export ZONEID=$(bashio::config 'ZONEID')
+export IPURL=$(bashio::config 'IPURL')
 
 # Functions used for the addon.
-
-# Debugging message wrapper used to echo values only if debug is set to true
-function debug_message {
-    if [ $DEBUG == 'true' ]; then
-      echo "$(date) DEBUG : $1"
-    fi
-}
 
 # Create / Update the Record in Route53 if/when required
 # Indentation is a little off because bash's heredoc support doesnt like indentation..
 #
 function update_record {
-    echo "$(date) INFO : Updating / Creating the AAAA record for ${RECORDNAME} in Zone ${ZONEID}"
+    bashio::log.info "Updating / Creating the AAAA record for ${RECORDNAME} in Zone ${ZONEID}"
 
     rm -f /tmp/createjson.tmp
 
@@ -74,16 +65,16 @@ function evaluate_record {
 
     if [[  $IPADDRESS =~ ^([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}$ ]]; then
 
-      debug_message "Received a valid IP address from the remote service - OK to proceed checking values"
+      bashio::log.debug "Received a valid IP address from the remote service - OK to proceed checking values"
 
       if [ $IPADDRESS == $RECORDADDRESS ]; then
-        debug_message "The Addresses match - nothing to do ($IPADDRESS is the same as $RECORDADDRESS)"
+        bashio::log.debug "The Addresses match - nothing to do ($IPADDRESS is the same as $RECORDADDRESS)"
       else
-        echo "$(date) INFO : The Addresses don't match ($IPADDRESS is not the same as $RECORDADDRESS) - Updating record"
+        bashio::log.info "The Addresses don't match ($IPADDRESS is not the same as $RECORDADDRESS) - Updating record"
         update_record
       fi
     else
-      echo "$(date) WARN : The IP Address string received from the remote service was not a valid IP address (${IPADDRESS})- unable to check and update the DNS record"
+      bashio::log.warning "The IP Address string received from the remote service was not a valid IP address (${IPADDRESS})- unable to check and update the DNS record"
     fi
 
 }
@@ -94,33 +85,33 @@ function evaluate_record {
 #
 
 # If debug is true, dump the runtime data first.
-debug_message "-------------------------------------------"
-debug_message "Dumping Debugging data"
-debug_message "Got AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}"
-debug_message "Got AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}"
-debug_message "Got AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}"
-debug_message "Got TIMEOUT: ${TIMEOUT}"
-debug_message "Got IPURL: ${IPURL}"
-debug_message "Got TIMEOUT: ${TIMEOUT}"
-debug_message "Got RECORDNAME: ${RECORDNAME}"
-debug_message "Got ZONEID: ${ZONEID}"
-debug_message "-------------------------------------------"
+bashio::log.debug "-------------------------------------------"
+bashio::log.debug "Dumping Debugging data"
+bashio::log.debug "Got AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}"
+bashio::log.debug "Got AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}"
+bashio::log.debug "Got AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}"
+bashio::log.debug "Got TIMEOUT: ${TIMEOUT}"
+bashio::log.debug "Got IPURL: ${IPURL}"
+bashio::log.debug "Got TIMEOUT: ${TIMEOUT}"
+bashio::log.debug "Got RECORDNAME: ${RECORDNAME}"
+bashio::log.debug "Got ZONEID: ${ZONEID}"
+bashio::log.debug "-------------------------------------------"
 
 
 while true
 do
 
-    debug_message "Executing main program body"
+    bashio::log.debug "Executing main program body"
     export IPADDRESS=$(curl -6 -s ${IPURL})
-    debug_message "Got ${IPADDRESS}"
+    bashio::log.debug "Got ${IPADDRESS}"
 
     export RESPONSECODE=$(aws route53  test-dns-answer --hosted-zone-id ${ZONEID} --record-type AAAA --record-name ${RECORDNAME} | jq '.ResponseCode')
-    debug_message "Got ${RESPONSECODE}"
+    bashio::log.debug "Got ${RESPONSECODE}"
 
     case $RESPONSECODE in
 
         '"NXDOMAIN"')
-            echo "$(date) INFO : Got NXDOMAIN (${RESPONSECODE}) - Creating new AAAA Record"
+            bashio::log.info "Got NXDOMAIN (${RESPONSECODE}) - Creating new AAAA Record"
             update_record
         ;;
 
@@ -130,11 +121,11 @@ do
         ;;
 
         *)
-            echo "$(date) INFO : Got ${RESPONSECODE} that was not NXDOMAIN or NOERROR - CANNOT CONTINUE"
+            bashio::log.info "Got ${RESPONSECODE} that was not NXDOMAIN or NOERROR - CANNOT CONTINUE"
             exit 1
         ;;
 
     esac
-    debug_message "Sleeping for ${TIMEOUT} seconds"
+    bashio::log.debug "Sleeping for ${TIMEOUT} seconds"
     sleep $TIMEOUT
 done

@@ -20,7 +20,7 @@
         "ZONEID": null,
         "RECORDNAME": null,
         "TIMEOUT": 500,
-        "DEBUG": false,
+        "log_level": "info",
         "IPURL": "http://v6.ipv6-test.com/api/myip.php"
     },
     "schema": {
@@ -30,7 +30,7 @@
         "ZONEID": "str",
         "RECORDNAME": "str",
         "TIMEOUT": "int",
-        "DEBUG": "str",
+        "log_level": "match(^(trace|debug|info|notice|warning|error|fatal)$)",
         "IPURL": "str"
     }
 }
